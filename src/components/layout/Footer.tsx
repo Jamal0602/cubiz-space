@@ -33,12 +33,12 @@ const Footer = () => {
             <h3 className="text-sm font-semibold text-foreground mb-4">Projects</h3>
             <ul className="space-y-3">
               <li>
-                <a href="https://multiprojectassociation.lovable.app" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-cubiz-500 transition-colors">
+                <a href="https://mpa.cubiz.space" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-cubiz-500 transition-colors">
                   Multiproject Association
                 </a>
               </li>
               <li>
-                <a href="https://cubiz3teams.lovable.app" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-cubiz-500 transition-colors">
+                <a href="https://tech.cubiz.space" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-cubiz-500 transition-colors">
                   Cubiz Teams
                 </a>
               </li>
