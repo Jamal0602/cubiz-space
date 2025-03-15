@@ -51,7 +51,7 @@ const Navbar = () => {
 
   const projectLinks = [
     { name: "Multiproject Association", url: "https://mpa.cubiz.space" },
-    { name: "Cubiz Teams", url: "https://tech.cubiz.space" },
+    { name: "Cubiz Teams", url: "https://team.cubiz.space" },
   ];
 
   return (
