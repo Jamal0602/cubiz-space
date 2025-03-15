@@ -31,14 +31,14 @@ const Index = () => {
       id: 1,
       name: "Multiproject Association",
       description: "Connect and manage multiple projects in one interface",
-      url: "https://multiprojectassociation.lovable.app",
+      url: "",
       icon: Globe,
     },
     {
       id: 2,
       name: "Cubiz Teams",
       description: "Team collaboration platform with integrated tools",
-      url: "https://cubiz3teams.lovable.app",
+      url: "team.cubiz.space",
       icon: Users,
     },
   ];
