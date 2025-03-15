@@ -31,14 +31,14 @@ const Index = () => {
       id: 1,
       name: "Multiproject Association",
       description: "Connect and manage multiple projects in one interface",
-      url: "",
+      url: "https://mpa.cubiz.space",
       icon: Globe,
     },
     {
       id: 2,
       name: "Cubiz Teams",
       description: "Team collaboration platform with integrated tools",
-      url: "team.cubiz.space",
+      url: "https://team.cubiz.space",
       icon: Users,
     },
   ];
