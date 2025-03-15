@@ -38,7 +38,7 @@ const Footer = () => {
                 </a>
               </li>
               <li>
-                <a href="https://tech.cubiz.space" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-cubiz-500 transition-colors">
+                <a href="https://team.cubiz.space" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-cubiz-500 transition-colors">
                   Cubiz Teams
                 </a>
               </li>
