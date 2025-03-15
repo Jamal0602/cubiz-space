@@ -50,8 +50,8 @@ const Navbar = () => {
   ];
 
   const projectLinks = [
-    { name: "Multiproject Association", url: "https://multiprojectassociation.lovable.app" },
-    { name: "Cubiz Teams", url: "https://cubiz3teams.lovable.app" },
+    { name: "Multiproject Association", url: "https://mpa.cubiz.space" },
+    { name: "Cubiz Teams", url: "https://tech.cubiz.space" },
   ];
 
   return (
@@ -233,7 +233,7 @@ const Navbar = () => {
             ))}
             <div className="px-4 pt-2 flex items-center space-x-4 border-t border-gray-100">
               <Button asChild variant="outline" size="sm" className="flex-1">
-                <a href="https://github.com/cubiz" target="_blank" rel="noopener noreferrer">
+                <a href="" target="_blank" rel="noopener noreferrer">
                   <Github className="mr-2 h-4 w-4" />
                   GitHub
                 </a>
