@@ -10,8 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Loader } from "@/components/ui/loader";
 import { format } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
-import { Search, Send, User, UserCheck, UserPlus } from "lucide-react";
-import { Message, Profile } from "@/types/app";
+import { MessageSquare, Search, Send, User, UserCheck, UserPlus, X } from "lucide-react";
+import { Message, Profile, parsePrivacySettings } from "@/types/app";
 
 export default function Messages() {
   const { user, profile, isVerified } = useAuth();
@@ -102,10 +102,21 @@ export default function Messages() {
           
           if (profiles) {
             const fullConversations: { [userId: string]: Profile & { unread: number } } = {};
-            profiles.forEach((profile: Profile) => {
-              fullConversations[profile.id] = {
-                ...profile,
-                unread: conversationsMap[profile.id].unread
+            profiles.forEach((rawProfile: any) => {
+              const profileData: Profile = {
+                id: rawProfile.id,
+                full_name: rawProfile.full_name,
+                avatar_url: rawProfile.avatar_url,
+                bio: rawProfile.bio,
+                location: rawProfile.location,
+                cubiz_id: rawProfile.cubiz_id,
+                is_verified: rawProfile.is_verified,
+                privacy_settings: parsePrivacySettings(rawProfile.privacy_settings)
+              };
+              
+              fullConversations[profileData.id] = {
+                ...profileData,
+                unread: conversationsMap[profileData.id].unread
               };
             });
             setConversations(fullConversations);
@@ -204,7 +215,20 @@ export default function Messages() {
 
       if (error) throw error;
       
-      setSearchResults(data as Profile[]);
+      if (data) {
+        const transformedData: Profile[] = data.map((rawProfile: any) => ({
+          id: rawProfile.id,
+          full_name: rawProfile.full_name,
+          avatar_url: rawProfile.avatar_url,
+          bio: rawProfile.bio,
+          location: rawProfile.location,
+          cubiz_id: rawProfile.cubiz_id,
+          is_verified: rawProfile.is_verified,
+          privacy_settings: parsePrivacySettings(rawProfile.privacy_settings)
+        }));
+        
+        setSearchResults(transformedData);
+      }
     } catch (error) {
       console.error("Error searching users:", error);
       toast({
@@ -237,9 +261,11 @@ export default function Messages() {
           .eq('id', recipientId)
           .single();
         
-        if (data?.privacy_settings?.messages === 'verified' && !isVerified) {
+        const privacySettings = parsePrivacySettings(data?.privacy_settings);
+        
+        if (privacySettings.messages === 'verified' && !isVerified) {
           isRequest = true;
-        } else if (data?.privacy_settings?.messages === 'none') {
+        } else if (privacySettings.messages === 'none') {
           throw new Error("This user doesn't accept messages");
         }
       }

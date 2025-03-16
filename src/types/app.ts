@@ -1,4 +1,8 @@
 
+import { Database } from '@/integrations/supabase/types';
+
+type Json = Database['public']['Json'];
+
 export interface Profile {
   id: string;
   full_name: string;
@@ -14,6 +18,9 @@ export interface Profile {
     posts: 'public' | 'private';
     messages: 'all' | 'verified' | 'none';
   };
+  role?: 'user' | 'employee' | 'manager' | 'admin';
+  department?: string;
+  joined_at?: string;
 }
 
 export interface Subscription {
@@ -49,4 +56,39 @@ export interface Event {
   created_at: string;
   updated_at: string;
   team_id?: string;
+}
+
+// Helper function to parse JSON privacy settings
+export function parsePrivacySettings(settings: Json | null): Profile['privacy_settings'] {
+  if (!settings) {
+    return {
+      profile: 'public',
+      posts: 'public',
+      messages: 'all'
+    };
+  }
+  
+  try {
+    if (typeof settings === 'string') {
+      const parsed = JSON.parse(settings);
+      return {
+        profile: parsed.profile || 'public',
+        posts: parsed.posts || 'public',
+        messages: parsed.messages || 'all'
+      };
+    } else {
+      return {
+        profile: settings.profile || 'public',
+        posts: settings.posts || 'public',
+        messages: settings.messages || 'all'
+      };
+    }
+  } catch (e) {
+    console.error('Error parsing privacy settings:', e);
+    return {
+      profile: 'public',
+      posts: 'public',
+      messages: 'all'
+    };
+  }
 }

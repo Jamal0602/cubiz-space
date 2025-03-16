@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -14,6 +15,7 @@ interface Post {
   created_at: string;
   created_by: string;
   profile?: Profile;
+  attachments?: string[];
 }
 
 export function CommunityPosts() {
@@ -37,7 +39,7 @@ export function CommunityPosts() {
         .from('community_posts')
         .select(`
           *,
-          profile:profiles!created_by(id, full_name, avatar_url, is_verified, cubiz_id)
+          profile:profiles(id, full_name, avatar_url, is_verified, cubiz_id)
         `)
         .order('created_at', { ascending: false })
         .range(from, to);
@@ -45,10 +47,20 @@ export function CommunityPosts() {
       if (error) throw error;
 
       if (data) {
+        // Transform the data to match the Post interface
+        const transformedData = data.map((post: any) => ({
+          id: post.id,
+          content: post.content,
+          created_at: post.created_at,
+          created_by: post.created_by,
+          attachments: post.attachments,
+          profile: post.profile
+        }));
+
         if (append) {
-          setPosts(prev => [...prev, ...data as Post[]]);
+          setPosts(prev => [...prev, ...transformedData]);
         } else {
-          setPosts(data as Post[]);
+          setPosts(transformedData);
         }
         
         setHasMore(data.length === pageSize);
