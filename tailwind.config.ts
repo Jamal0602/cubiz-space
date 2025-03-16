@@ -1,7 +1,19 @@
 
 import type { Config } from "tailwindcss";
 import { fontFamily } from "tailwindcss/defaultTheme";
-
+// tailwind.config.ts or tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        cubiz: {
+          500: '#yourColorHexCode', // Replace with actual hex code
+        },
+      },
+    },
+  },
+  plugins: [],
+}
 const config: Config = {
   darkMode: ["class"],
   content: [
