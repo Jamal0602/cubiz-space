@@ -1,27 +1,50 @@
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { Toaster } from "@/components/ui/sonner";
+import { MainLayout } from "@/components/layout/MainLayout";
+import { AuthProvider } from "@/components/userAuth/AuthContextExtended";
+
 import Index from "./pages/Index";
+import Login from "./pages/Login";
+import Signup from "./pages/Signup";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
+import Community from "./pages/Community";
+import CalendarPage from "./pages/Calendar";
+import Settings from "./pages/settings/Settings";
+import Profile from "./pages/settings/Profile";
+import NotificationSettings from "./pages/settings/Notifications";
+import Upgrade from "./pages/settings/Upgrade";
 
-const queryClient = new QueryClient();
+import "./App.css";
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
-  </QueryClientProvider>
-);
+function App() {
+  return (
+    <BrowserRouter>
+      <AuthProvider>
+        <MainLayout>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
+            <Route path="/messages" element={<Messages />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/calendar" element={<CalendarPage />} />
+            
+            <Route path="/settings" element={<Settings />}>
+              <Route index element={<Profile />} />
+              <Route path="profile" element={<Profile />} />
+              <Route path="notifications" element={<NotificationSettings />} />
+              <Route path="upgrade" element={<Upgrade />} />
+            </Route>
+            
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </MainLayout>
+        <Toaster />
+      </AuthProvider>
+    </BrowserRouter>
+  );
+}
 
 export default App;

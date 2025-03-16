@@ -1,291 +1,285 @@
 
 import { useState } from "react";
-import { Check, CreditCard } from "lucide-react";
+import { useAuth } from "@/components/userAuth/AuthContextExtended";
+import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { useAuth } from "@/components/userAuth/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
+import { Badge } from "@/components/ui/badge";
+import { Check, Crown, Diamond, Star } from "lucide-react";
 import { toast } from "@/components/ui/use-toast";
+import { Loader } from "@/components/ui/loader";
+import { addMonths, addYears, format } from "date-fns";
 
-export default function UpgradePlan() {
+export default function Upgrade() {
   const { user, profile, subscription, refreshProfile } = useAuth();
-  const [loading, setLoading] = useState(false);
-  const [selectedPlan, setSelectedPlan] = useState<"monthly" | "yearly" | "lifetime">("monthly");
-  const [paymentDialogOpen, setPaymentDialogOpen] = useState(false);
-  const [upiId, setUpiId] = useState("");
+  const [loading, setLoading] = useState<string | null>(null);
 
-  const planPrices = {
-    monthly: "₹30",
-    yearly: "₹350",
-    lifetime: "₹1000"
-  };
-
-  const planFeatures = [
-    "Verified profile badge",
-    "Priority in community features",
-    "Advanced privacy controls",
-    "Early access to new features",
-    "Ad-free experience"
-  ];
-
-  const planSavings = {
-    monthly: "",
-    yearly: "Save ₹10 compared to monthly",
-    lifetime: "Best value"
-  };
-
-  const handleUpgrade = () => {
-    if (!user) {
-      toast({
-        title: "Authentication required",
-        description: "Please log in to upgrade your account.",
-        variant: "destructive"
-      });
-      return;
-    }
+  const handleUpgrade = async (plan: 'monthly' | 'yearly' | 'lifetime') => {
+    if (!user) return;
     
-    setPaymentDialogOpen(true);
-  };
-
-  const handlePayment = async () => {
-    if (!user || !profile) return;
+    setLoading(plan);
     
     try {
-      setLoading(true);
-
-      // In a real app, this would be integrated with a payment gateway
-      // For this demo, we'll just simulate a successful payment
+      // For a real app, you would integrate with a payment provider here
+      // This is a simplified version for demo purposes
       
-      // Store the subscription in the database
-      const now = new Date();
-      let expiresAt = null;
+      let expiresAt: Date | null = null;
       
-      if (selectedPlan === "monthly") {
-        const expiry = new Date(now);
-        expiry.setMonth(expiry.getMonth() + 1);
-        expiresAt = expiry.toISOString();
-      } else if (selectedPlan === "yearly") {
-        const expiry = new Date(now);
-        expiry.setFullYear(expiry.getFullYear() + 1);
-        expiresAt = expiry.toISOString();
+      if (plan === 'monthly') {
+        expiresAt = addMonths(new Date(), 1);
+      } else if (plan === 'yearly') {
+        expiresAt = addYears(new Date(), 1);
       }
       
-      // Create subscription record
-      const { error: subscriptionError } = await supabase
-        .from("subscriptions")
-        .insert({
-          user_id: user.id,
-          plan: selectedPlan,
-          status: "active",
-          expires_at: expiresAt,
-          payment_id: `payment_${Date.now()}`
-        });
-        
-      if (subscriptionError) throw subscriptionError;
+      // If user already has a subscription, update it
+      if (subscription) {
+        await supabase
+          .from('subscriptions')
+          .update({
+            plan,
+            status: 'active',
+            expires_at: expiresAt?.toISOString(),
+            payment_id: `demo-${Date.now()}`
+          })
+          .eq('id', subscription.id);
+      } else {
+        // Create a new subscription
+        await supabase
+          .from('subscriptions')
+          .insert({
+            user_id: user.id,
+            plan,
+            status: 'active',
+            expires_at: expiresAt?.toISOString(),
+            payment_id: `demo-${Date.now()}`
+          });
+      }
       
-      // Update user profile to verified status
-      const { error: profileError } = await supabase
-        .from("profiles")
-        .update({ is_verified: true })
-        .eq("id", profile.id);
-        
-      if (profileError) throw profileError;
+      // Update user profile to mark as verified
+      await supabase
+        .from('profiles')
+        .update({
+          is_verified: true
+        })
+        .eq('id', user.id);
       
+      // Refresh profile to get updated data
       await refreshProfile();
       
       toast({
-        title: "Upgrade successful!",
-        description: `Your account has been upgraded to the ${selectedPlan} plan.`,
+        title: "Upgraded Successfully",
+        description: `Your account has been upgraded to the ${plan} plan.`,
       });
-      
-      setPaymentDialogOpen(false);
     } catch (error) {
-      console.error("Error processing upgrade:", error);
+      console.error("Error upgrading account:", error);
       toast({
-        title: "Upgrade failed",
-        description: "There was an error processing your upgrade. Please try again.",
-        variant: "destructive"
+        title: "Error",
+        description: "Failed to upgrade account. Please try again.",
+        variant: "destructive",
       });
     } finally {
-      setLoading(false);
+      setLoading(null);
     }
   };
 
-  return (
-    <div className="container mx-auto max-w-4xl space-y-8 py-8">
-      <div>
-        <h1 className="text-3xl font-bold">Upgrade Your Account</h1>
-        <p className="text-muted-foreground">Get verified and unlock premium features</p>
-      </div>
+  if (!user) {
+    return <div>Please log in to access upgrade options.</div>;
+  }
 
-      {subscription ? (
-        <Card>
+  return (
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-2xl font-bold">Upgrade Your Account</h1>
+        <p className="text-muted-foreground">
+          Unlock premium features and get verified
+        </p>
+      </div>
+      
+      {subscription && (
+        <Card className="bg-gradient-to-r from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20">
           <CardHeader>
-            <CardTitle>Current Subscription</CardTitle>
-            <CardDescription>You are currently on the {subscription.plan} plan</CardDescription>
+            <CardTitle className="flex items-center gap-2">
+              <Crown className="text-yellow-500" />
+              <span>Current Subscription</span>
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2 rounded-full bg-green-100 px-3 py-1.5 text-green-600 dark:bg-green-900 dark:text-green-300">
-              <Check size={16} />
-              <span className="text-sm font-medium">Active</span>
+            <div className="space-y-2">
+              <div>
+                <span className="font-semibold">Plan:</span>{" "}
+                <Badge variant="secondary" className="ml-2 capitalize">
+                  {subscription.plan}
+                </Badge>
+              </div>
+              
+              <div>
+                <span className="font-semibold">Status:</span>{" "}
+                <Badge variant="outline" className="ml-2 capitalize">
+                  {subscription.status}
+                </Badge>
+              </div>
+              
+              {subscription.expires_at && (
+                <div>
+                  <span className="font-semibold">Expires:</span>{" "}
+                  <span className="text-muted-foreground">
+                    {format(new Date(subscription.expires_at), "MMMM d, yyyy")}
+                  </span>
+                </div>
+              )}
             </div>
-            
-            <div className="mt-4 space-y-2">
-              <p className="font-medium">Plan Features:</p>
-              <ul className="list-inside list-disc space-y-1">
-                {planFeatures.map((feature, index) => (
-                  <li key={index} className="text-sm">{feature}</li>
-                ))}
-              </ul>
-            </div>
-            
-            {subscription.expires_at && (
-              <p className="mt-4 text-sm text-muted-foreground">
-                Your subscription will expire on: {new Date(subscription.expires_at).toLocaleDateString()}
-              </p>
-            )}
           </CardContent>
         </Card>
-      ) : (
-        <>
-          <div className="grid gap-6 md:grid-cols-3">
-            {/* Monthly Plan */}
-            <Card className={selectedPlan === "monthly" ? "border-primary" : ""}>
-              <CardHeader>
-                <CardTitle>Monthly</CardTitle>
-                <CardDescription>Best for trying out</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">₹30<span className="text-sm font-normal text-muted-foreground">/month</span></div>
-                <ul className="mt-4 space-y-2">
-                  {planFeatures.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm">
-                      <Check size={16} className="mt-0.5 text-green-500" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  onClick={() => setSelectedPlan("monthly")} 
-                  variant={selectedPlan === "monthly" ? "default" : "outline"}
-                  className="w-full"
-                >
-                  {selectedPlan === "monthly" ? "Selected" : "Select Plan"}
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            {/* Yearly Plan */}
-            <Card className={selectedPlan === "yearly" ? "border-primary" : ""}>
-              <CardHeader>
-                <CardTitle>Yearly</CardTitle>
-                <CardDescription>Best for regular users</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">₹350<span className="text-sm font-normal text-muted-foreground">/year</span></div>
-                <div className="mt-1 text-sm text-green-600">Save ₹10 compared to monthly</div>
-                <ul className="mt-4 space-y-2">
-                  {planFeatures.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm">
-                      <Check size={16} className="mt-0.5 text-green-500" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  onClick={() => setSelectedPlan("yearly")} 
-                  variant={selectedPlan === "yearly" ? "default" : "outline"}
-                  className="w-full"
-                >
-                  {selectedPlan === "yearly" ? "Selected" : "Select Plan"}
-                </Button>
-              </CardFooter>
-            </Card>
-            
-            {/* Lifetime Plan */}
-            <Card className={selectedPlan === "lifetime" ? "border-primary" : ""}>
-              <CardHeader>
-                <CardTitle>Lifetime</CardTitle>
-                <CardDescription>Best value for money</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="text-3xl font-bold">₹1000<span className="text-sm font-normal text-muted-foreground">/lifetime</span></div>
-                <div className="mt-1 text-sm text-green-600">Best value</div>
-                <ul className="mt-4 space-y-2">
-                  {planFeatures.map((feature, index) => (
-                    <li key={index} className="flex items-start gap-2 text-sm">
-                      <Check size={16} className="mt-0.5 text-green-500" />
-                      <span>{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-              <CardFooter>
-                <Button 
-                  onClick={() => setSelectedPlan("lifetime")} 
-                  variant={selectedPlan === "lifetime" ? "default" : "outline"}
-                  className="w-full"
-                >
-                  {selectedPlan === "lifetime" ? "Selected" : "Select Plan"}
-                </Button>
-              </CardFooter>
-            </Card>
-          </div>
-          
-          <div className="flex justify-center">
-            <Button size="lg" onClick={handleUpgrade}>
-              Upgrade Now to {selectedPlan.charAt(0).toUpperCase() + selectedPlan.slice(1)} Plan
-            </Button>
-          </div>
-        </>
       )}
-
-      <Dialog open={paymentDialogOpen} onOpenChange={setPaymentDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Complete Your Upgrade</DialogTitle>
-            <DialogDescription>
-              Pay using UPI to upgrade to the {selectedPlan} plan for {planPrices[selectedPlan]}.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="text-center">
-              <p className="font-medium">UPI Payment Details</p>
-              <p className="mt-2 text-sm">Send payment to:</p>
-              <p className="mt-1 font-mono text-lg">ja.jamalasraf@fam</p>
-              <p className="mt-4 text-sm text-muted-foreground">
-                Please make sure to include your email or username in the payment note.
-              </p>
+      
+      <div className="grid gap-6 md:grid-cols-3">
+        {/* Monthly Plan */}
+        <Card>
+          <CardHeader>
+            <div className="mb-2 flex justify-between">
+              <Badge variant="outline">Monthly</Badge>
+              <Star className="text-yellow-500" />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="upi-id">Your UPI ID (for verification)</Label>
-              <Input 
-                id="upi-id" 
-                value={upiId} 
-                onChange={(e) => setUpiId(e.target.value)}
-                placeholder="yourname@bank" 
-              />
-            </div>
-          </div>
-          
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setPaymentDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handlePayment} disabled={loading || !upiId}>
-              {loading ? "Processing..." : "Complete Payment"}
+            <CardTitle className="flex items-baseline gap-1">
+              <span>₹30</span>
+              <span className="text-sm text-muted-foreground">/month</span>
+            </CardTitle>
+            <CardDescription>Perfect for trying out premium features</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>Verified profile badge</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>Priority in community events</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>Advanced profile customization</span>
+              </li>
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              onClick={() => handleUpgrade('monthly')} 
+              disabled={loading !== null}
+              className="w-full"
+            >
+              {loading === 'monthly' ? <Loader size="sm" className="mr-2" /> : null}
+              Subscribe Now
             </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardFooter>
+        </Card>
+        
+        {/* Yearly Plan */}
+        <Card className="border-primary shadow-md">
+          <CardHeader>
+            <div className="mb-2 flex justify-between">
+              <Badge>Best Value</Badge>
+              <Diamond className="text-purple-500" />
+            </div>
+            <CardTitle className="flex items-baseline gap-1">
+              <span>₹350</span>
+              <span className="text-sm text-muted-foreground">/year</span>
+            </CardTitle>
+            <CardDescription>Save ₹10 compared to monthly plan</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>All monthly features</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>Exclusive yearly member badge</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>Early access to new features</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>Priority support</span>
+              </li>
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              onClick={() => handleUpgrade('yearly')}
+              disabled={loading !== null}
+              className="w-full"
+              variant="default"
+            >
+              {loading === 'yearly' ? <Loader size="sm" className="mr-2" /> : null}
+              Subscribe Now
+            </Button>
+          </CardFooter>
+        </Card>
+        
+        {/* Lifetime Plan */}
+        <Card>
+          <CardHeader>
+            <div className="mb-2 flex justify-between">
+              <Badge variant="outline">Lifetime</Badge>
+              <Crown className="text-yellow-500" />
+            </div>
+            <CardTitle className="flex items-baseline gap-1">
+              <span>₹1000</span>
+              <span className="text-sm text-muted-foreground">one-time</span>
+            </CardTitle>
+            <CardDescription>Pay once, enjoy premium forever</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="space-y-2">
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>All yearly features</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>Exclusive lifetime member badge</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>Never pay again</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Check size={16} className="text-green-500" />
+                <span>All future premium features included</span>
+              </li>
+            </ul>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              onClick={() => handleUpgrade('lifetime')}
+              disabled={loading !== null}
+              className="w-full"
+              variant="outline"
+            >
+              {loading === 'lifetime' ? <Loader size="sm" className="mr-2" /> : null}
+              Get Lifetime Access
+            </Button>
+          </CardFooter>
+        </Card>
+      </div>
+      
+      <Card className="bg-muted/50">
+        <CardHeader>
+          <CardTitle>Payment Information</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="text-sm text-muted-foreground">
+            This is a demo application. In a real scenario, the payment would be processed securely through a payment gateway. For this demo, upgrades are processed instantly without actual payment.
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            UPI ID for demo payments: <span className="font-mono">ja.jamalasraf@fam</span>
+          </p>
+        </CardContent>
+      </Card>
     </div>
   );
 }

@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
@@ -7,14 +6,7 @@ import { Loader } from "@/components/ui/loader";
 import { ThumbsUp, MessageSquare, Share } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-
-interface Profile {
-  id: string;
-  full_name: string;
-  avatar_url?: string;
-  is_verified?: boolean;
-  cubiz_id: string;
-}
+import { Profile } from "@/types/app";
 
 interface Post {
   id: string;
@@ -45,25 +37,22 @@ export function CommunityPosts() {
         .from('community_posts')
         .select(`
           *,
-          profile:created_by(id, full_name, avatar_url, is_verified, cubiz_id)
+          profile:profiles!created_by(id, full_name, avatar_url, is_verified, cubiz_id)
         `)
         .order('created_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
 
-      const formattedPosts = data.map(post => ({
-        ...post,
-        profile: post.profile as Profile
-      }));
-
-      if (append) {
-        setPosts(prev => [...prev, ...formattedPosts]);
-      } else {
-        setPosts(formattedPosts);
+      if (data) {
+        if (append) {
+          setPosts(prev => [...prev, ...data as Post[]]);
+        } else {
+          setPosts(data as Post[]);
+        }
+        
+        setHasMore(data.length === pageSize);
       }
-
-      setHasMore(data.length === pageSize);
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
