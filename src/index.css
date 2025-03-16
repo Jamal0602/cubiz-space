@@ -4,6 +4,11 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@layer utilities {
+  .from-cubiz-500 {
+    background-color: theme('colors.cubiz.500');
+  }
+}
 
 @layer base {
   :root {
@@ -173,3 +178,4 @@ html {
 ::-webkit-scrollbar-thumb:hover {
   background: rgba(0, 0, 0, 0.2);
 }
+
