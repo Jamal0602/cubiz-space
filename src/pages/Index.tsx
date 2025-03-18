@@ -41,6 +41,13 @@ const Index = () => {
       url: "https://team.cubiz.space",
       icon: Users,
     },
+    {
+      id: 3,
+      name: "Jamal Asraf",
+      description: "Founder and Chairman of Cubiz Group's of Technology - [CGT]",
+      url: "https://ja.cubiz.space",
+      icon: Person,
+    },
   ];
 
   return (
