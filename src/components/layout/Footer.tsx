@@ -43,6 +43,11 @@ const Footer = () => {
                 </a>
               </li>
               <li>
+                <a href="https://ja.cubiz.space" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-cubiz-500 transition-colors">
+                  CEO & Founder
+                </a>
+              </li>
+              <li>
                 <span className="text-sm text-muted-foreground/50">
                   More coming soon...
                 </span>
