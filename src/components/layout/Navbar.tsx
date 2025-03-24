@@ -50,7 +50,6 @@ const Navbar = () => {
   ];
 
   const projectLinks = [
-    { name: "Jamal Asraf [FOUNDER]", url: "https://ja.cubiz.space" },
     { name: "Multiproject Association", url: "https://mpa.cubiz.space" },
     { name: "Cubiz Teams", url: "https://team.cubiz.space" },
   ];

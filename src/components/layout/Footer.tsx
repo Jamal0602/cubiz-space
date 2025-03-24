@@ -33,9 +33,6 @@ const Footer = () => {
             <h3 className="text-sm font-semibold text-foreground mb-4">Projects</h3>
             <ul className="space-y-3">
               <li>
-                <a href="https://ja.cubiz.space" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-cubiz-500 transition-colors">
-                  Jamal Asraf [FOUNDER]
-                </a>
                 <a href="https://mpa.cubiz.space" target="_blank" rel="noopener noreferrer" className="text-sm text-muted-foreground hover:text-cubiz-500 transition-colors">
                   Multiproject Association
                 </a>
