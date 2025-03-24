@@ -7,7 +7,14 @@ import { Loader } from "@/components/ui/loader";
 import { ThumbsUp, MessageSquare, Share } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { Profile } from "@/types/app";
+
+interface Profile {
+  id: string;
+  full_name: string;
+  avatar_url?: string;
+  is_verified?: boolean;
+  cubiz_id: string;
+}
 
 interface Post {
   id: string;
@@ -15,7 +22,6 @@ interface Post {
   created_at: string;
   created_by: string;
   profile?: Profile;
-  attachments?: string[];
 }
 
 export function CommunityPosts() {
@@ -39,32 +45,25 @@ export function CommunityPosts() {
         .from('community_posts')
         .select(`
           *,
-          profile:profiles(id, full_name, avatar_url, is_verified, cubiz_id)
+          profile:created_by(id, full_name, avatar_url, is_verified, cubiz_id)
         `)
         .order('created_at', { ascending: false })
         .range(from, to);
 
       if (error) throw error;
 
-      if (data) {
-        // Transform the data to match the Post interface
-        const transformedData = data.map((post: any) => ({
-          id: post.id,
-          content: post.content,
-          created_at: post.created_at,
-          created_by: post.created_by,
-          attachments: post.attachments,
-          profile: post.profile
-        }));
+      const formattedPosts = data.map(post => ({
+        ...post,
+        profile: post.profile as Profile
+      }));
 
-        if (append) {
-          setPosts(prev => [...prev, ...transformedData]);
-        } else {
-          setPosts(transformedData);
-        }
-        
-        setHasMore(data.length === pageSize);
+      if (append) {
+        setPosts(prev => [...prev, ...formattedPosts]);
+      } else {
+        setPosts(formattedPosts);
       }
+
+      setHasMore(data.length === pageSize);
     } catch (error) {
       console.error("Error fetching posts:", error);
     } finally {
