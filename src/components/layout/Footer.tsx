@@ -1,14 +1,11 @@
 
 import { Link } from "react-router-dom";
 import { Github, Heart, Twitter } from "lucide-react";
-import Script from "next/script"
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
   
   return (
-    <body><Script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7483780622360467"
-     crossorigin="anonymous"></Script></body>
     <footer className="bg-white border-t border-gray-100">
       <div className="container mx-auto px-6 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
