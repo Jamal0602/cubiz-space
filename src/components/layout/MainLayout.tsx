@@ -17,8 +17,8 @@ const MainLayout = ({ children }: MainLayoutProps) => {
     <div className="flex flex-col min-h-screen">
       <Navbar />
       
-    <body><Script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7483780622360467"
-     crossorigin="anonymous"></Script></body>
+    <Script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7483780622360467"
+     crossorigin="anonymous"></Script>
       <motion.main 
         key={location.pathname}
         initial={{ opacity: 0, y: 10 }}
